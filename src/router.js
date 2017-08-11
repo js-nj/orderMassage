@@ -1,9 +1,8 @@
 import index from './pages/index/index.vue';
 export default {
-    routes: [
-        {
-            path: '/',
-            component: index
-        }
-    ]
+	routes: [{
+		path: '/',
+		name: 'index',
+		component: index
+	}]
 };

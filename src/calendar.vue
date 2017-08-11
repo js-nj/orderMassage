@@ -26,7 +26,7 @@
         <!-- 日期 -->
         <div class="calendar__days">
           <div class="calendar__day" v-for="day in days"
-               :class="{'calendar__day_now': checkToday(day), 'calendar__day_selected': checkSelected(day), 'calendar__day_othermonth': checkOtherMonth(day), 'calendar__day_decorate': checkDecorate(day)}"
+               :class="{'calendar__day_now': checkToday(day), 'calendar__day_selected': checkSelected(day), 'calendar__day_othermonth': checkOtherMonth(day), 'calendar__day_decorate': checkDecorate(day), 'calendar__day_published': checkPublished(day),}"
                @click="select(day)">
             <span>{{day.getMonth() + 1}}/{{day.getDate()}}<i class="sub" v-if="checkSub(day)" :style="{color: checkSub(day).color}">{{checkSub(day).content}}</i></span>
           </div>
@@ -206,6 +206,9 @@
           background: #eb4f04;
         }
       }
+      &.calendar__day_published {
+        background: #60be29;
+      }
     }
   }
 }
@@ -320,10 +323,10 @@ export default {
           startDate = this.startDate
           startDay = startDate.getDay()
         }else if(this.view === 'month2'){
-          dayslength = 7
+          dayslength = 1
           startDate = this.startDate
           startDay = startDate.getDay()
-          alert('我是按照月份设置预约')
+          //alert('我是按照月份设置预约')
         }
 
         if (this.startMonday) {
@@ -418,6 +421,9 @@ export default {
       this.$nextTick(() => {
         this.$emit('today')
       })
+    },
+    checkPublished(){
+      
     }
   },
   mounted() {
