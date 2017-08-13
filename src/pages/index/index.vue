@@ -1,25 +1,31 @@
 <template>
   <div class="main">
     <div>
-      <h1 class="title">预约按摩</h1>
+      <h3 class="title">预约按摩</h3>
       <mt-navbar v-model="selected">
-        <mt-tab-item id="3">系统设置</mt-tab-item>
-        <mt-tab-item id="1">设置预约</mt-tab-item>
-        <mt-tab-item id="2">查看预约</mt-tab-item>
+        <mt-tab-item id="1">系统设置</mt-tab-item>
+        <mt-tab-item id="2">设置预约</mt-tab-item>
+        <mt-tab-item id="3">查看预约</mt-tab-item>
       </mt-navbar>
 
       <!-- tab-container -->
       <mt-tab-container v-model="selected">
-        <mt-tab-container-item id="3">
+        <mt-tab-container-item id="1">
             <mt-field label="日限制次数" placeholder="请输入次数" v-model="dayMaxTime"></mt-field>
             <mt-field label="周限制次数" placeholder="请输入次数" v-model="weekMaxTime"></mt-field>
             <mt-field label="月限制次数" placeholder="请输入次数" v-model="monthMaxTime"></mt-field>
             <mt-field label="每次时长" placeholder="请输入时长" v-model="keepTime"></mt-field>
             <mt-field label="时间段" placeholder="请输入时间段" v-model="systimeFiled"></mt-field>
-            <mt-button type="primary" v-on:click="submitSysConfig">提交</mt-button>
+            <div class="" style="color:#999;padding:0 36px;font-size:14px;">
+              <div>说明：</div>
+              <p>1、时间段的栗子:12:00-14:00,18:00-20:00</p>
+              <!-- <p>2、多个时间段之间用英文半角","隔开</p> -->
+              <p>2、每次时长要求可以被每个时间段的时长整除</p>
+            </div>
+            <mt-button type="primary" size="large" v-on:click="submitSysConfig" class="om-button">提交</mt-button>
         </mt-tab-container-item>
-        <mt-tab-container-item id="1">
-          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected1" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="1" @selectDate="selectDate">
+        <mt-tab-container-item id="2">
+          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected1" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="2" @selectDate="selectDate">
               <div class="actions" slot="action">
                 <div class="action" @click="changeView">{{viewName}}</div>
                 <!-- <div class="action" @click="addEvent">加</div> -->
@@ -55,13 +61,15 @@
                     }]">
             </mt-radio>
             <!-- <mt-field label="床位数" placeholder="请输入床位数" v-model="orderNumber"></mt-field> -->
-
-            <mt-button type="primary" @click="saveHealthManage">保存</mt-button>
-            <mt-button type="danger">发布</mt-button>
+            <div class="om-2-buttom-container" style="">
+              <mt-button type="primary" @click="saveHealthManage" class="om-2-buttom-item" size="large">保存</mt-button>
+              <mt-button type="danger" class="om-2-buttom-item" size="large">发布</mt-button>
+            </div>
+            
           </div>
         </mt-tab-container-item>
-        <mt-tab-container-item id="2">
-          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected1" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="2" @selectDate="selectDate">
+        <mt-tab-container-item id="3">
+          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected1" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="selectDate">
             <div class="actions" slot="action">
               <div class="action" @click="changeView">{{viewName}}</div>
               <!-- <div class="action" @click="addEvent">加</div> -->
@@ -113,18 +121,56 @@
   .title {
     text-align: center;
     padding: 10px;
-    color: #31b29c;
+    color: #26a2ff;
   }
   .action {
     display: inline-block;
     padding: 5px;
     border-radius: 2px;
-    background: #31b29c;
+    background: #26a2ff;
     color: #fff;
   }
   .om-pv-8 {
     padding-top: 8px;
     padding-bottom: 8px;
+  }
+  .om-button {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+  }
+  .mint-tab-item-label {
+    font-size:16px;
+    font-weight: 600;
+  }
+  .mint-tab-container {
+    margin-top: 8px;
+  }
+  .mint-navbar .mint-tab-item.is-selected {
+    border-bottom: 3px solid #26a2ff;
+    color: #26a2ff;
+    margin-bottom: 0px;
+  }
+  .mint-button--primary {
+    background-color:#26a2ff;
+  }
+  .mint-cell-wrapper {
+        font-size: 15px;
+        padding: 0 36px;
+  }
+  .mint-checklist-title,.mint-radiolist-title {
+    font-size: 15px;
+    color: #333;
+    font-weight: 600;
+  }
+  .om-2-buttom-container {
+    overflow:auto;position:fixed;bottom:0;width:100%;
+  }
+  .om-2-buttom-item {
+    width:50%;float:left;
+  }
+  .calendar__indicator-detail {
+    color:#26a2ff !important;
   }
 </style>
 
@@ -138,7 +184,7 @@
   export default {
       data(){
         return {
-          selected:'3',
+          selected:'1',
           view: 'month',
           decorate: {},
           sub: {
