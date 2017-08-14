@@ -28,7 +28,7 @@
           <div class="calendar__day" v-for="day in days"
                :class="{'calendar__day_now': checkToday(day), 'calendar__day_selected': checkSelected(day), 'calendar__day_othermonth': checkOtherMonth(day), 'calendar__day_decorate': checkDecorate(day), 'calendar__day_published': checkPublished(day),}"
                @click="select(day)">
-            <span>{{day.getMonth() + 1}}/{{day.getDate()}}<i class="sub" v-if="checkSub(day)" :style="{color: checkSub(day).color}">{{checkSub(day).content}}</i></span>
+               <span style="position:relative;">{{day.getMonth() + 1}}/{{day.getDate()}}<i class="sub" v-if="checkSub(day)" :style="{color: checkSub(day).color}">{{checkSub(day).content}}</i><i class="om-c-i"></i></span>
           </div>
         </div>
       </div>
@@ -206,8 +206,17 @@
           background: #eb4f04;
         }
       }
-      &.calendar__day_published {
-        background: #60be29;
+      /* &.calendar__day_published {
+        background: #ef4f4f;
+      } */
+      &.calendar__day_published span i.om-c-i {
+        width:8px;
+        height:8px;
+        border-radius: 4px;
+        display: inline-block;
+        position: absolute;
+        top: 4px;
+        background: #06c1ae;
       }
     }
   }
@@ -286,6 +295,13 @@ export default {
     },
     mainFrom:{
       type:Number,
+      propsync:false//不会被propsync实现双向绑定
+    },
+    statusDatas:{
+      type: Array,
+      'default'() {
+        return []
+      },
       propsync:false//不会被propsync实现双向绑定
     }
   },
@@ -422,8 +438,44 @@ export default {
         this.$emit('today')
       })
     },
-    checkPublished(){
-      
+    checkPublished(date){
+      if (this.view === 'month') {
+        var formatDate = function(date) { 
+          var myyear = date.getFullYear(); 
+          var mymonth = date.getMonth()+1; 
+          var myweekday = date.getDate(); 
+
+          if(mymonth < 10){ 
+          mymonth = "0" + mymonth; 
+          } 
+          if(myweekday < 10){ 
+          myweekday = "0" + myweekday; 
+          } 
+          return (myyear + "-" + mymonth + "-" + myweekday); 
+        };
+        // console.log('this.statusDatas');
+        // console.log(this.statusDatas);
+        var targetArray = _.find(this.statusDatas, function(chr) {
+          //console.log('chr:'+formatDate(new Date(chr.dayTime)));
+          // console.log(chr.dayTime)
+          //console.log('date:'+formatDate(new Date(date)));
+          // console.log(date)
+          return formatDate(new Date(chr.dayTime)) == formatDate(new Date(date));
+        });
+        //console.log('targetArray')
+        //console.log(targetArray)
+        if (targetArray) {
+
+          return true;
+        }
+        // this.statusDatas.forEach(function(item){
+        //   console.log('dayTime:'+new Date(item.dayTime).getTime());
+        //   console.log('date:'+new Date(date).getTime());
+        //   if (new Date(item.dayTime).getTime() == new Date(date).getTime()) {
+        //     console.log('item.status:'+item.status);
+        //   }
+        // });
+      }
     }
   },
   mounted() {

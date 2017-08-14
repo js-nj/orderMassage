@@ -2,84 +2,101 @@
   <div class="main">
     <div>
       <h3 class="title">预约按摩</h3>
-      <mt-navbar v-model="selected">
+      <mt-navbar v-model="tabselected">
         <mt-tab-item id="1">系统设置</mt-tab-item>
         <mt-tab-item id="2">设置预约</mt-tab-item>
         <mt-tab-item id="3">查看预约</mt-tab-item>
       </mt-navbar>
 
       <!-- tab-container -->
-      <mt-tab-container v-model="selected">
+      <mt-tab-container v-model="tabselected">
         <mt-tab-container-item id="1">
             <mt-field label="日限制次数" placeholder="请输入次数" v-model="dayMaxTime"></mt-field>
             <mt-field label="周限制次数" placeholder="请输入次数" v-model="weekMaxTime"></mt-field>
             <mt-field label="月限制次数" placeholder="请输入次数" v-model="monthMaxTime"></mt-field>
             <mt-field label="每次时长" placeholder="请输入时长" v-model="keepTime"></mt-field>
-            <mt-field label="时间段" placeholder="请输入时间段" v-model="systimeFiled"></mt-field>
-            <div class="" style="color:#999;padding:0 36px;font-size:14px;">
+            <!-- <mt-field label="时间段" placeholder="请输入时间段" v-model="systimeFiled"></mt-field> -->
+            <div>
+              <mt-field label="时间段" placeholder="请添加时间" type="text" v-model="timeSlotsValue"></mt-field>
+              <div v-on:click="addTimeSlot" style="padding-left: 9px;">
+                <mt-button type="primary" size="small">添加时间段</mt-button>
+              </div>
+              <mt-popup
+                v-model="timeSlotVisible"
+                position="bottom" style="width: 100%;">
+                <div class="" style="font-size:14px;">
+                  <span class="" @click="cancelTimeSlot" style="float:left;display:inline-block;padding: 4px 16px;">取消</span>
+                  <span class="" @click="okTimeSlot" style="float:right;color:#26a2ff;display:inline-block;padding: 4px 16px;">确定</span>
+                  <div class="" style="clear:both;"></div>
+                </div>
+                <mt-picker :slots="timeSlotsArray" @change="onTimetimeSlotsValueChange"></mt-picker>
+              </mt-popup>
+            </div>
+            
+            <div class="" style="color:#999;padding:12px 12px;font-size:14px;">
               <div>说明：</div>
-              <p>1、时间段的栗子:12:00-14:00,18:00-20:00</p>
+              <p>1、时间段支持手动收入,栗子:12:00-14:00,18:00-20:00</p>
               <!-- <p>2、多个时间段之间用英文半角","隔开</p> -->
               <p>2、每次时长要求可以被每个时间段的时长整除</p>
             </div>
             <mt-button type="primary" size="large" v-on:click="submitSysConfig" class="om-button">提交</mt-button>
         </mt-tab-container-item>
         <mt-tab-container-item id="2">
-          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected1" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="2" @selectDate="selectDate">
-              <div class="actions" slot="action">
-                <div class="action" @click="changeView">{{viewName}}</div>
-                <!-- <div class="action" @click="addEvent">加</div> -->
-              </div>
-          </calendar>
-          <div v-if="hasOrderedConfig">
-            <div>展示已经有的</div>
-          </div>
-          <div v-else >
-            <mt-checklist
-              title="设置时间段"
-              v-model="timeFiledValue"
-              :options="options">
-            </mt-checklist>
-            <div v-on:click="addTimeFiled">
-              <mt-field label="设置时间范围" placeholder="请输入时间" type="text" v-model="pickerValue" ></mt-field>
-            </div>
-            <mt-popup
-              v-model="popupTimeVisible"
-              position="bottom" style="width: 100%;">
-              <mt-picker :slots="timeslots" @change="onTimeValuesChange"></mt-picker>
-            </mt-popup>
+          <div style="height:580px;overflow:auto;">
             <mt-radio
-              title="设置地点"
+              title="选择地点"
               v-model="stationValue"
               :options="[{
                       label: '金智园区',
-                      value: '0'
+                      value: '0',
+                      checked:true
                     },
                     {
                       label: '牛首园区',
                       value: '1'
-                    }]">
+                    }]" class="om-2-radio" @click="clickStationRadio">
             </mt-radio>
-            <!-- <mt-field label="床位数" placeholder="请输入床位数" v-model="orderNumber"></mt-field> -->
-            <div class="om-2-buttom-container" style="">
-              <mt-button type="primary" @click="saveHealthManage" class="om-2-buttom-item" size="large">保存</mt-button>
-              <mt-button type="danger" class="om-2-buttom-item" size="large">发布</mt-button>
+            <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="2" :statusDatas="statusDatas" @selectDate="selectDate">
+                <div class="actions" slot="action">
+                  <div class="action" @click="changeView">{{viewName}}</div>
+                  <!-- <div class="action" @click="addEvent">加</div> -->
+                </div>
+            </calendar>
+            <div v-if="hasOrderedConfig">
+              <div style="padding:16px;">
+                  <label style="font-weight:600;display:inline-block;padding-bottom:8px;">已发布的设置</label>
+                  <div v-for="item in orderedConfigDatas" style="padding:8px 0;">
+                    <label>时间段：<span v-text="item.timeslot"></span></label>
+                    <label style="display:inline-block;padding-left:8px;">床位数：<span v-text="item.number"></span></label>
+                  </div>
+              </div>
             </div>
-            
+            <div v-else >
+              <om-checklist
+                title="设置时间段"
+                v-model="timeFiledValue"
+                :options="options">
+              </om-checklist> 
+            </div>
+          </div>
+          <div class="om-2-buttom-container" style="" v-show="!hasOrderedConfig">
+            <mt-button type="primary" @click="saveHealthManage('add')" class="om-2-buttom-item" size="large">保存</mt-button>
+            <mt-button type="danger" @click="saveHealthManage('release')" class="om-2-buttom-item" size="large">发布</mt-button>
           </div>
         </mt-tab-container-item>
         <mt-tab-container-item id="3">
-          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected1" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="selectDate">
+          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="findSelectDate">
             <div class="actions" slot="action">
               <div class="action" @click="changeView">{{viewName}}</div>
               <!-- <div class="action" @click="addEvent">加</div> -->
             </div>
           </calendar>
           <div>
-            <div v-for="item in orderedInfo" class="om-pv-8">
-              <table>
+            <div class="om-pv-8 om-ph-8">
+              <table style="width:100%;">
                 <thead>
                   <tr>
+                    <!-- <td>预约编号</td> -->
                     <td>日期</td>
                     <td>时间</td>
                     <td>地点</td>
@@ -88,12 +105,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>item.DayTime</td>
-                    <td>item.timeSlot</td>
-                    <td>item.Station</td>
-                    <td>item.EmployeeNum</td>
-                    <td>item.EmployeeName</td>
+                  <tr v-for="item in orderedInfo" style="height:24px;">
+                    <!-- <td v-text="item.id"></td> -->
+                    <td v-text="item.dayTime"></td>
+                    <td v-text="item.timeSlot"></td>
+                    <td v-text="item.station"></td>
+                    <td v-text="item.EmployeeId"></td>
+                    <td v-text="item.EmployeeName"></td>
                   </tr>
                 </tbody>
               </table>
@@ -134,6 +152,13 @@
     padding-top: 8px;
     padding-bottom: 8px;
   }
+  .om-ph-8 {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .mint-button--small {
+    padding: 5px 8px;
+  }
   .om-button {
     width: 100%;
     position: fixed;
@@ -159,8 +184,8 @@
         padding: 0 36px;
   }
   .mint-checklist-title,.mint-radiolist-title {
-    font-size: 15px;
-    color: #333;
+    font-size: 15px !important;
+    color: #333 !important;
     font-weight: 600;
   }
   .om-2-buttom-container {
@@ -172,6 +197,20 @@
   .calendar__indicator-detail {
     color:#26a2ff !important;
   }
+  .om-2-radio .mint-radiolist-title{
+    display: inline-block;
+    /* position: relative; */
+    vertical-align: top;
+    position: relative;
+    top: 6px;
+  }
+  .om-2-radio .mint-cell {
+    display: inline-block;
+  }
+  .mint-radio-input:checked + .mint-radio-core {
+    background-color: #26a2ff;
+    border-color:#26a2ff;
+  }
 </style>
 
 <script>
@@ -180,11 +219,13 @@
   import moment from 'moment';
   import axios from 'axios';
   import api from '../../api.js';
+  import omChecklist from '../checklist/checklist.vue';
   import Calendar from '../../calendar.vue';
+  import lodash from 'lodash';
   export default {
       data(){
         return {
-          selected:'1',
+          tabselected:'1',
           view: 'month',
           decorate: {},
           sub: {
@@ -200,22 +241,22 @@
           currentView: {},
           indicator: {},
           startDate: new Date,
-          selected1: new Date,
+          selected: new Date(),
           orderedInfo:[],
-          username:'',
-          stationValue:'',
-          pickerValue:'',
-          timeFiled:'',
+          //username:'',
+          stationValue:'0',
+          //pickerValue:'',
+          //timeFiled:'',
           //时间范围
-          popupTimeVisible:false,
-          timeslots:[
-            {
-              flex: 1,
-              values: [],
-              className: 'slot1',
-              textAlign: 'center'
-            }
-          ],
+          // popupTimeVisible:false,
+          // timeslots:[
+          //   {
+          //     flex: 1,
+          //     values: [],
+          //     className: 'slot1',
+          //     textAlign: 'center'
+          //   }
+          // ],
           //时长
           keepTime:'',
           //限制次数
@@ -224,11 +265,53 @@
           monthMaxTime:'',
           systimeFiled:'',
           flag1:'',
-          hasOrderedConfig:'',
+          hasOrderedConfig:true,
           options:[],
           timeFiledValue:[],
           orderNumber:'',
-          flagManage:''
+          orderedConfigDatas:[
+            {
+              timeslot:'12:00-12:30',
+              number:'1'
+            },{
+              timeslot:'12:30-13:00',
+              number:'2'
+            }
+          ],
+          flagManage:'',
+          statusDatas:[],
+          //1 选择时间
+          timeSlotVisible:false,
+          timeSlotsValue:'',
+          timeSlotsValueTmp:'',
+          timeSlotsArray:[
+            {
+              flex: 1,
+              values:[],
+              // values: ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24',],
+              className: 'slot1',
+              textAlign: 'right'
+            },{
+              flex: 1,
+              values: [],
+              className: 'slot2',
+              textAlign: 'right'
+            }, {
+              divider: true,
+              content: '-',
+              className: 'slot3'
+            },{
+              flex: 1,
+              values: [],
+              className: 'slot4',
+              textAlign: 'left'
+            }, {
+              flex: 1,
+              values: [],
+              className: 'slot5',
+              textAlign: 'left'
+            }
+          ]
         }
       },
       computed: {
@@ -256,10 +339,22 @@
         startDate(startDate) {
           this.dealWithIndicator(startDate)
         },
-        selected(selected){
-          if (selected == 1) {
+        tabselected(tabselected){
+          if (tabselected == 2) {
+            //请求总状态
+            this.getDayAll();
+            this.getManageInfo();
             this.getTime();
+          }else if (tabselected == 3) {
+            this.getOrderInfoAll();
           }
+          console.log('tabselected:------------------'+tabselected)
+        },
+        timeFiledValue(val,oldVal){
+          console.log('val')
+          console.log(val)
+          console.log('oldVal')
+          console.log(oldVal)
         }
       },
       methods: {
@@ -303,44 +398,109 @@
         today() {
           console.log('today clicked')
         },
+        addTimeSlot(){
+          this.timeSlotVisible = true;
+        },
+        cancelTimeSlot(){
+          this.timeSlotVisible = false;
+        },
+        okTimeSlot(val){
+          var beforeArray = this.timeSlotsValueTmp.split('-')[0];
+          var afterArray = this.timeSlotsValueTmp.split('-')[1];
+          var beforeArrayHorse = Number(beforeArray.split(':')[0]);
+          var beforeArrayMinute = Number(beforeArray.split(':')[1]);
+          var afterArrayHorse = Number(afterArray.split(':')[0]);
+          var afterArrayMinute = Number(afterArray.split(':')[1]);
+          if ((afterArrayHorse < beforeArrayHorse) || (afterArrayHorse == beforeArrayHorse && afterArrayMinute<=beforeArrayMinute)) {
+            Toast('结束时间应大于开始时间');
+            return;
+          }
+          
+          if (this.timeSlotsValue) {
+            this.timeSlotsValue = this.timeSlotsValue+','+this.timeSlotsValueTmp;
+          }else {
+            this.timeSlotsValue = this.timeSlotsValueTmp;
+          }
+          this.timeSlotVisible = false;
+        },
+        onTimetimeSlotsValueChange(picker, values){
+          console.log(values)
+          if (!values[0]) {
+            values[0] = '00';
+          }
+          if (!values[1]) {
+            values[1] = '00';
+          }
+          if (!values[2]) {
+            values[2] = '00';
+          }
+          if (!values[3]) {
+            values[3] = '00';
+          }
+          this.timeSlotsValueTmp = values[0] +':'+ values[1] +'-'+ values[2] +':'+ values[3];
+        },
         selectDate() {
           var that= this;
-          if (this.selected == 2) {
-            that.orderedInfo = [];
-            //已经预约的信息
-            axios({
-                method:"POST",
-                url:api.appsCount,
-                params:{
-                }
-            }).then(function(response){
-              var responseData = response.data.datas.appscount.rows;
-              if (response.data.code == 0) {
-                  if (responseData && responseData.length>0) {
-                    responseData.map(function(item){
-                      var itemObj = item;
-                      itemObj.time='xxx';
-                      itemObj.name = 'xxx';
-                      that.orderedInfo.push(itemObj);
-                    });
-                  }
-              }else {
-                Toast('获取预约信息失败');
+          that.getManageInfo();
+          that.getTime();
+        },
+        getDayAll(){
+          var that = this;
+          axios({
+              method:"POST",
+              url:api.getDayAll,
+              params:{
+                station:that.stationValue
               }
-            }).catch(function(err){
-              Toast(err);
-            });
-          }
+          }).then(function(response){
+            var responseData = response.data;
+            if (responseData.rescode == 0) {
+              if (responseData.resMessage.length>0) {
+                that.statusDatas = responseData.resMessage;
+              }
+            }else {
+              Toast('获取每日设置状态信息失败');
+            }
+          }).catch(function(err){
+            Toast(err);
+          });
         },
-        addTimeFiled() {
-          this.popupTimeVisible = true;
-          //this.$refs.datetimepicker.open();
+        //包含发布与不发布的
+        getManageInfo() {
+          var that= this;
+          //保存的信息
+          axios({
+              method:"POST",
+              url:api.getManageInfo,
+              params:{
+                day_time:that.formatDate(new Date(that.selected)),
+                station:that.stationValue
+              }
+          }).then(function(response){
+            var responseData = response.data;
+            if (responseData.rescode == 0) {
+              if (responseData.resMessage.length>0) {
+                if (responseData.resMessage[0].status == 0) {
+                  that.hasOrderedConfig = true;
+                  responseData.resMessage[0].timeslots.forEach(function(item){
+                    that.timeFiledValue.push(item.timeslot);
+                    document.querySelectorAll('.om-checklist-input[from="'+item.timeslot+'"]').value = item.number;
+                  });  
+                }else if(responseData.resMessage[0].status == 1){
+                  that.hasOrderedConfig = true;
+                  that.orderedConfigDatas = responseData.resMessage[0].timeslots;
+                }
+              }
+            }else {
+              Toast('获取当日预约设置信息失败');
+            }
+          }).catch(function(err){
+            Toast(err);
+          });  
         },
-        handleConfirm(){
-
-        },
-        onTimeValuesChange(picker, values) {
-
+        findSelectDate(){
+          var that = this;
+          that.getOrderInfoAll();
         },
         submitSysConfig() {
           var that= this;
@@ -353,7 +513,7 @@
                 week_limit:that.weekMaxTime,
                 month_limit:that.monthMaxTime,
                 duration:that.keepTime,
-                time_slot:that.systimeFiled,
+                time_slot:that.timeSlotsValue,
                 flag:that.flag1
               }
           }).then(function(response){
@@ -382,7 +542,7 @@
                 that.weekMaxTime = responseData.resMessage.weekLimit;
                 that.monthMaxTime = responseData.resMessage.monthLimit;
                 that.keepTime = responseData.resMessage.duration;
-                that.systimeFiled = responseData.resMessage.timeSlot;
+                that.timeSlotsValue = responseData.resMessage.timeSlot;
               }else {
                 that.flag1 = 0;
               }
@@ -392,6 +552,12 @@
           }).catch(function(err){
             Toast(err);
           });  
+        },
+        clickStationRadio(){
+          //请求总状态
+          this.getDayAll();
+          this.getManageInfo();
+          this.getTime();
         },
         getTime(){
           var that= this;
@@ -419,35 +585,38 @@
             Toast(err);
           });  
         },
-        saveHealthManage(){
+        saveHealthManage(str){
           var that= this;
+          var timeAndNumber = that.timeFiledValue.map(function(item){
+            if (item) {
+              var targetNumber = document.querySelectorAll('.om-checklist-input[from="'+item+'"]');
+              return {
+                time:item,
+                number:targetNumber[0].value
+              }
+            }
+          });
+          console.log(timeAndNumber)
           var paramsObj = {
               method:"POST",
-              url:api.getTime,
+              url:api.saveHealthManage,
               params:{
                 day_time:'',
-                time_slot:JSON.stringify([{time:'12:00-12:30',number:'2'}]),//that.timeFiledValue.join(',')
+                time_slot:JSON.stringify(timeAndNumber),
                 station:that.stationValue,
-                flagManage:'0'
+                flag:str
               }
           };
-          switch(that.view){
-            case 'month':
-              var fromatDate = that.fromatDateFunc(that.selected1);
-              paramsObj.day_time = fromatDate;
-              break;
-            case 'week':
-              paramsObj.day_time = that.selected1;
-              break;
-            case 'month2':
-              paramsObj.day_time = that.selected1;
-              break;
-            }
+          var fromatDate = that.fromatDateFunc(that.selected);
+          paramsObj.params.day_time = fromatDate;
           //保存的信息
           axios(paramsObj).then(function(response){
             var responseData = response.data;
             if (responseData.rescode == 0) {
-              
+              if (str == 'release') {
+                that.getDayAll();
+                that.getManageInfo();
+              }
             }else {
               Toast('获取预约信息失败');
             }
@@ -455,23 +624,151 @@
             Toast(err);
           });  
         },
-        getManageInfo(){
-
-        },
         fromatDateFunc(date){
-          return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
+          var that = this;
+          
+          //通过某日获取本周除周六周日的其他五天日期
+          var getWeekDaysExceptWeekend = function(date){
+            console.log(date)
+              var now = new Date(date); 
+              var nowTime = now.getTime(); 
+              var day = now.getDay();
+              var oneDayLong = 24*60*60*1000 ;
+              var targetWeekArray = [];
+              for (var i = 0; i <= 6; i++) {
+                var targetTime = nowTime + (i - day)*oneDayLong;
+                var newDay = new Date(targetTime).getDay();
+                if (newDay != 0 && newDay != 6) {
+                  var targetDate = that.formatDate(new Date(targetTime));
+                  targetWeekArray.push(targetDate);
+                } 
+              }
+              console.log(targetWeekArray)
+              return targetWeekArray;
+          };
+          //通过某日获取本月除周六周日的其他日期
+          var getMonthDaysExceptWeekend = function(date){
+            console.log(date)
+              var now = new Date(date); 
+              var nowTime = now.getTime(); 
+              var day = now.getDate();
+              var oneDayLong = 24*60*60*1000 ;
+              var targetMonthArray = [];
+              var monthCountLength = getCountDays(date);
+              for (var i = 1; i <= monthCountLength; i++) {
+                var targetTime = nowTime + (i - day)*oneDayLong;
+                var newDay = new Date(targetTime).getDay();
+                if (newDay != 0 && newDay != 6) {
+                  var targetDate = that.formatDate(new Date(targetTime));
+                  targetMonthArray.push(targetDate);
+                } 
+              }
+              console.log(targetMonthArray)
+              return targetMonthArray;
+          };
+          //获取每月天数
+          var getCountDays = function(date){
+              var curDate = new Date(date);
+              /* 获取当前月份 */
+              var curMonth = curDate.getMonth();
+             /*  生成实际的月份: 由于curMonth会比实际月份小1, 故需加1 */
+             curDate.setMonth(curMonth + 1);
+             /* 将日期设置为0, 这里为什么要这样设置, 我不知道原因, 这是从网上学来的 */
+             curDate.setDate(0);
+             /* 返回当月的天数 */
+             return curDate.getDate();
+          };
+          
+          switch(that.view){
+            case 'month':
+              return that.formatDate(date);
+              break;
+            case 'week':
+              return getWeekDaysExceptWeekend(date).join(',');
+              break;
+            case 'month2':
+              return getMonthDaysExceptWeekend(date).join(',');
+              break;
+          }
+        },
+        getOrderInfoAll() {
+          var that= this;
+          that.orderedInfo = [];
+          var paramsObj = {
+              method:"POST",
+              url:api.getOrderInfoAll,
+              params:{}
+          };
+          switch(that.view){
+            case 'month':
+              paramsObj.params.day_time = that.formatDate(that.selected);
+              paramsObj.params.day_time = '2017-08-14,2017-08-16';
+              break;
+            case 'week':
+              //paramsObj.params.day_time = that.formatDate(date);
+              break;
+            case 'month2':
+              //paramsObj.params.day_time = that.formatDate(date);
+              break;
+          }
+          //保存的信息
+          axios(paramsObj).then(function(response){
+            var responseData = response.data;
+            if (responseData.rescode == 0) {
+              if (responseData.resMessage) {
+                // responseData.resMessage.forEach(function(item){
+                //   var tmpObj = {};
+                //   tmpObj.label = item;
+                //   tmpObj.value = item;
+                //   that.orderedInfo.push(tmpObj);
+                // });
+              }
+            }else {
+              Toast('获取员工已经预约信息失败');
+            }
+          }).catch(function(err){
+            Toast(err);
+          }); 
+        },
+        //格局化日期：yyyy-MM-dd 
+        formatDate: function(date) { 
+            var myyear = date.getFullYear(); 
+            var mymonth = date.getMonth()+1; 
+            var myweekday = date.getDate(); 
+
+            if(mymonth < 10){ 
+            mymonth = "0" + mymonth; 
+            } 
+            if(myweekday < 10){ 
+            myweekday = "0" + myweekday; 
+            } 
+            return (myyear + "-" + mymonth + "-" + myweekday); 
+        },
+        setNumberArray(total){
+          var numberArray = [];
+          for (var i = 0; i < total; i++) {
+            var number = i;
+            if (number <  10) {
+              number = '0' + String(number);
+            }
+            numberArray.push(number);
+          }
+          return numberArray;
+          console.log(numberArray)
         }
       },
       created() {
         this.dealWithIndicator(this.startDate);
-        this.getSysConfig();  
+        this.getSysConfig();
+        this.timeSlotsArray[0].values = this.setNumberArray(24);
+        this.timeSlotsArray[1].values = this.setNumberArray(60);
+        this.timeSlotsArray[3].values = this.setNumberArray(24);
+        this.timeSlotsArray[4].values = this.setNumberArray(60);
       },
       components: {
         [Toast.name]: Toast,
-        // [Navbar.name]: Navbar,
-        // [Field.name]: Field,
-        // [Cell.name]: Cell,
-        Calendar
+        Calendar,
+        omChecklist
       }
   }
 </script>

@@ -16,7 +16,8 @@
     "bh-mixin-sdk": "^0.1.29",
     "bh-mint-ui2": "^0.0.6",
     "vue": "^2.1.0",
-    "vue-router": "^2.1.1"
+    "vue-router": "^2.1.1",
+    "lodash": "latest"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

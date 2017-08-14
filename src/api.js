@@ -11,6 +11,6 @@ export default {
 	getTime: WEBPACK_CONIFG_HOST + '/health/getTime',
 	saveHealthManage: WEBPACK_CONIFG_HOST + '/health/saveHealthManage',
 	getManageInfo: WEBPACK_CONIFG_HOST + '/health/getManageInfo', //获取全部
-	err: WEBPACK_CONIFG_HOST + '/sys/mykbxt/api/feedBackInfo.do',
-	userInfo: WEBPACK_CONIFG_HOST + '/sys/itservicecommon/api/queryAppAndUserDatas.do'
+	getDayAll: WEBPACK_CONIFG_HOST + '/health/getDayAll',
+	getOrderInfoAll: WEBPACK_CONIFG_HOST + '/health/getOrderInfoAll'
 }

@@ -2,12 +2,15 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import App from './app.vue';
 import Mint from 'bh-mint-ui2';
-import { Toast } from 'bh-mint-ui2';
+import {
+  Toast
+} from 'bh-mint-ui2';
 import route from './router';
 import * as utils from './utils'
 import api from './api'
 import 'bh-mint-ui2/lib/style.css'
 import init from 'bh-mixin-sdk'
+
 
 Vue.use(Mint);
 Vue.use(VueRouter);
@@ -42,7 +45,9 @@ function getSDKConfig() {
        */
       // TODO: 发请求获取微信签名
       config.wx.url = "http://res.wisedu.com:9090/checkSign";
-      utils.Get(api.getWechatSign, { configurl: window.location.href.replace(/#(\S+)?/, '') }).then(({
+      utils.Get(api.getWechatSign, {
+        configurl: window.location.href.replace(/#(\S+)?/, '')
+      }).then(({
         data: resp
       }) => {
         if (resp.code == "0") {
@@ -60,7 +65,7 @@ function getSDKConfig() {
         reject()
       })
     } else {
-      setTimeout(function () {
+      setTimeout(function() {
         resolve(config)
       }, 0)
     }
