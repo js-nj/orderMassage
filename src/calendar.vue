@@ -215,7 +215,8 @@
         border-radius: 4px;
         display: inline-block;
         position: absolute;
-        top: 4px;
+        top: 6px;
+        right: -10px;
         background: #06c1ae;
       }
       &.calendar__day_unpublished span i.om-c-i{
@@ -225,7 +226,8 @@
         border-radius: 4px;
         display: inline-block;
         position: absolute;
-        top: 4px;
+        top: 6px;
+        right: -10px;
       }
     }
   }
@@ -353,8 +355,8 @@ export default {
           startDate = this.startDate
           startDay = startDate.getDay()
         }else if(this.view === 'month2'){
-          dayslength = 1
-          startDate = this.startDate
+          dayslength = 35
+          startDate = new Date(this.startDate.getFullYear(), this.startDate.getMonth())
           startDay = startDate.getDay()
           //alert('我是按照月份设置预约')
         }
@@ -454,7 +456,7 @@ export default {
       })
     },
     checkUnpublished(date){
-      if (this.view === 'month') {
+      //if (this.view === 'month') {
         var formatDate = function(date) { 
           var myyear = date.getFullYear(); 
           var mymonth = date.getMonth()+1; 
@@ -491,10 +493,10 @@ export default {
         //     console.log('item.status:'+item.status);
         //   }
         // });
-      }
+      //}
     },
     checkPublished(date){
-      if (this.view === 'month') {
+      //if (this.view === 'month') {
         var formatDate = function(date) { 
           var myyear = date.getFullYear(); 
           var mymonth = date.getMonth()+1; 
@@ -531,7 +533,7 @@ export default {
         //     console.log('item.status:'+item.status);
         //   }
         // });
-      }
+      //}
     }
   },
   mounted() {

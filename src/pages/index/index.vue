@@ -99,12 +99,10 @@
                   <tr>
                     <!-- <td>预约编号</td> -->
                     <td style="width:20%;">日期</td>
-        
                     <td style="width:20%;">地点</td>
                     <td style="width:20%;">时间</td>
                     <td>姓名</td>
                     <td>员工号</td>
-                    
                   </tr>
                 </thead>
                 <tbody>
@@ -113,7 +111,6 @@
                     <td v-text="item.dayTime"></td>
                     <td v-text="item.station"></td>
                     <td v-text="item.timeSlot"></td>
-                    
                     <td v-text="item.employeeName"></td>
                     <td v-text="item.employeeId"></td>
                   </tr>
@@ -610,13 +607,21 @@
           var timeAndNumber = that.timeFiledValue.map(function(item){
             if (item) {
               var targetNumber = document.querySelectorAll('.om-checklist-input[from="'+item+'"]');
-              return {
-                time:item,
-                number:targetNumber[0].value
+              if (!targetNumber[0].value) {
+                Toast('请设置对应时间段的床位数');
+              }else {
+                return {
+                  time:item,
+                  number:targetNumber[0].value
+                }
               }
             }
           });
-          var timeAndNumber = _.sortBy(timeAndNumber, 'time');
+          if (timeAndNumber.length == 0) {
+            Toast('请设置时间以及床位');
+            return;
+          }
+          timeAndNumber = _.sortBy(timeAndNumber, 'time');
           console.log(timeAndNumber)
           var paramsObj = {
               method:"POST",
@@ -630,6 +635,18 @@
           };
           var fromatDate = that.fromatDateFunc(that.selected);
           paramsObj.params.day_time = fromatDate;
+          //判断是否可以按照周或者月进行设置
+          var targetElements = document.querySelectorAll('.calendar__day:not(.calendar__day_othermonth).calendar__day_published,.calendar__day:not(.calendar__day_othermonth).calendar__day_unpublished');      
+          if (targetElements && targetElements.length>0) {
+            if (this.view == 'week') {
+              Toast('本周已有设置,请按日设置!');
+              return;
+            }
+            if (this.view == 'month2') {
+              Toast('本月已有设置,请按日、周设置!');
+              return;
+            }
+          }
           //保存的信息
           axios(paramsObj).then(function(response){
             var responseData = response.data;
@@ -709,7 +726,8 @@
               return that.formatDate(date);
               break;
             case 'week':
-              return getWeekDaysExceptWeekend(date).join(',');
+              var weekDaysExceptWeekendArray = getWeekDaysExceptWeekend(date);
+              return weekDaysExceptWeekendArray.join(',');
               break;
             case 'month2':
               return getMonthDaysExceptWeekend(date).join(',');
