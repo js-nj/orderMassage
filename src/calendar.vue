@@ -26,7 +26,7 @@
         <!-- 日期 -->
         <div class="calendar__days">
           <div class="calendar__day" v-for="day in days"
-               :class="{'calendar__day_now': checkToday(day), 'calendar__day_selected': checkSelected(day), 'calendar__day_othermonth': checkOtherMonth(day), 'calendar__day_decorate': checkDecorate(day), 'calendar__day_published': checkPublished(day),}"
+               :class="{'calendar__day_now': checkToday(day), 'calendar__day_selected': checkSelected(day), 'calendar__day_othermonth': checkOtherMonth(day), 'calendar__day_decorate': checkDecorate(day), 'calendar__day_published': checkPublished(day),'calendar__day_unpublished': checkUnpublished(day)}"
                @click="select(day)">
                <span style="position:relative;">{{day.getMonth() + 1}}/{{day.getDate()}}<i class="sub" v-if="checkSub(day)" :style="{color: checkSub(day).color}">{{checkSub(day).content}}</i><i class="om-c-i"></i></span>
           </div>
@@ -218,6 +218,15 @@
         top: 4px;
         background: #06c1ae;
       }
+      &.calendar__day_unpublished span i.om-c-i{
+        background-color: #ef4f4f;
+        width:8px;
+        height:8px;
+        border-radius: 4px;
+        display: inline-block;
+        position: absolute;
+        top: 4px;
+      }
     }
   }
 }
@@ -231,6 +240,11 @@ const I18N = {
 import propsync from './mixins/propsync';//引入mixin文件
 export default {
   mixins: [propsync],
+  // data(){
+  //   return {
+  //     unpublished:false
+  //   }
+  // },
   props: {
     currentView: {
       type: Object,
@@ -428,7 +442,8 @@ export default {
     },
     select(day) {
       this.p_selected = day;
-      this.$emit('selectDate')
+      console.log('this.p_selected:'+this.p_selected)
+      this.$emit('selectDate',this.p_selected);
     },
     goToday() {
       this.startDate = new Date
@@ -437,6 +452,46 @@ export default {
       this.$nextTick(() => {
         this.$emit('today')
       })
+    },
+    checkUnpublished(date){
+      if (this.view === 'month') {
+        var formatDate = function(date) { 
+          var myyear = date.getFullYear(); 
+          var mymonth = date.getMonth()+1; 
+          var myweekday = date.getDate(); 
+
+          if(mymonth < 10){ 
+          mymonth = "0" + mymonth; 
+          } 
+          if(myweekday < 10){ 
+          myweekday = "0" + myweekday; 
+          } 
+          return (myyear + "-" + mymonth + "-" + myweekday); 
+        };
+        // console.log('this.statusDatas');
+        // console.log(this.statusDatas);
+        var targetArray = _.find(this.statusDatas, function(chr) {
+          //console.log('chr:'+formatDate(new Date(chr.dayTime)));
+          // console.log(chr.dayTime)
+          //console.log('date:'+formatDate(new Date(date)));
+          // console.log(date)
+          if (chr.status ==0) {
+            return formatDate(new Date(chr.dayTime)) == formatDate(new Date(date));
+          }
+        });
+        //console.log('targetArray')
+        //console.log(targetArray)
+        if (targetArray) {
+          return true;
+        }
+        // this.statusDatas.forEach(function(item){
+        //   console.log('dayTime:'+new Date(item.dayTime).getTime());
+        //   console.log('date:'+new Date(date).getTime());
+        //   if (new Date(item.dayTime).getTime() == new Date(date).getTime()) {
+        //     console.log('item.status:'+item.status);
+        //   }
+        // });
+      }
     },
     checkPublished(date){
       if (this.view === 'month') {
@@ -460,12 +515,13 @@ export default {
           // console.log(chr.dayTime)
           //console.log('date:'+formatDate(new Date(date)));
           // console.log(date)
-          return formatDate(new Date(chr.dayTime)) == formatDate(new Date(date));
+          if (chr.status ==1) {
+            return formatDate(new Date(chr.dayTime)) == formatDate(new Date(date));
+          }
         });
         //console.log('targetArray')
         //console.log(targetArray)
         if (targetArray) {
-
           return true;
         }
         // this.statusDatas.forEach(function(item){

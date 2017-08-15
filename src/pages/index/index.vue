@@ -54,7 +54,7 @@
                     {
                       label: '牛首园区',
                       value: '1'
-                    }]" class="om-2-radio" @click="clickStationRadio">
+                    }]" class="om-2-radio" >
             </mt-radio>
             <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="2" :statusDatas="statusDatas" @selectDate="selectDate">
                 <div class="actions" slot="action">
@@ -66,7 +66,7 @@
               <div style="padding:16px;">
                   <label style="font-weight:600;display:inline-block;padding-bottom:8px;">已发布的设置</label>
                   <div v-for="item in orderedConfigDatas" style="padding:8px 0;">
-                    <label>时间段：<span v-text="item.timeslot"></span></label>
+                    <label>时间段：<span v-text="item.time"></span></label>
                     <label style="display:inline-block;padding-left:8px;">床位数：<span v-text="item.number"></span></label>
                   </div>
               </div>
@@ -80,12 +80,13 @@
             </div>
           </div>
           <div class="om-2-buttom-container" style="" v-show="!hasOrderedConfig">
-            <mt-button type="primary" @click="saveHealthManage('add')" class="om-2-buttom-item" size="large">保存</mt-button>
-            <mt-button type="danger" @click="saveHealthManage('release')" class="om-2-buttom-item" size="large">发布</mt-button>
+            <mt-button v-if="saveTag" type="primary" @click="saveHealthManage('add')" class="om-2-buttom-item" style="width:100%;" size="large">保存</mt-button>
+            <mt-button v-else type="primary" @click="saveHealthManage('update')" class="om-2-buttom-item" size="large">更新</mt-button>
+            <mt-button v-show="!saveTag" type="danger" @click="saveHealthManage('release')" class="om-2-buttom-item" size="large">发布</mt-button>
           </div>
         </mt-tab-container-item>
         <mt-tab-container-item id="3">
-          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selected" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="findSelectDate">
+          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selectedQuery" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="findSelectDate">
             <div class="actions" slot="action">
               <div class="action" @click="changeView">{{viewName}}</div>
               <!-- <div class="action" @click="addEvent">加</div> -->
@@ -93,25 +94,28 @@
           </calendar>
           <div>
             <div class="om-pv-8 om-ph-8">
-              <table style="width:100%;">
+              <table style="width:100%;text-align:center;" >
                 <thead>
                   <tr>
                     <!-- <td>预约编号</td> -->
-                    <td>日期</td>
-                    <td>时间</td>
-                    <td>地点</td>
-                    <td>员工号</td>
+                    <td style="width:20%;">日期</td>
+        
+                    <td style="width:20%;">地点</td>
+                    <td style="width:20%;">时间</td>
                     <td>姓名</td>
+                    <td>员工号</td>
+                    
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in orderedInfo" style="height:24px;">
+                  <tr v-for="item in orderedInfo" style="height:24px;font-size:14px;line-height:26px;" class="">
                     <!-- <td v-text="item.id"></td> -->
                     <td v-text="item.dayTime"></td>
-                    <td v-text="item.timeSlot"></td>
                     <td v-text="item.station"></td>
-                    <td v-text="item.EmployeeId"></td>
-                    <td v-text="item.EmployeeName"></td>
+                    <td v-text="item.timeSlot"></td>
+                    
+                    <td v-text="item.employeeName"></td>
+                    <td v-text="item.employeeId"></td>
                   </tr>
                 </tbody>
               </table>
@@ -242,6 +246,7 @@
           indicator: {},
           startDate: new Date,
           selected: new Date(),
+          selectedQuery: new Date(),
           orderedInfo:[],
           //username:'',
           stationValue:'0',
@@ -265,7 +270,7 @@
           monthMaxTime:'',
           systimeFiled:'',
           flag1:'',
-          hasOrderedConfig:true,
+          hasOrderedConfig:false,
           options:[],
           timeFiledValue:[],
           orderNumber:'',
@@ -280,6 +285,7 @@
           ],
           flagManage:'',
           statusDatas:[],
+          saveTag:true,
           //1 选择时间
           timeSlotVisible:false,
           timeSlotsValue:'',
@@ -325,14 +331,6 @@
               return '月'
             }
           }
-        },
-        values:{
-          get(){
-            
-          },
-          set(){
-
-          }
         }
       },
       watch: {
@@ -340,7 +338,9 @@
           this.dealWithIndicator(startDate)
         },
         tabselected(tabselected){
-          if (tabselected == 2) {
+          if (tabselected == 1) {
+            this.getSysConfig();
+          }else if (tabselected == 2) {
             //请求总状态
             this.getDayAll();
             this.getManageInfo();
@@ -355,6 +355,12 @@
           console.log(val)
           console.log('oldVal')
           console.log(oldVal)
+        },
+        stationValue(val,oldVal){
+          //请求总状态
+          this.getDayAll();
+          this.getManageInfo();
+          this.getTime();
         }
       },
       methods: {
@@ -423,26 +429,31 @@
           }
           this.timeSlotVisible = false;
         },
-        onTimetimeSlotsValueChange(picker, values){
-          console.log(values)
-          if (!values[0]) {
-            values[0] = '00';
+        onTimetimeSlotsValueChange(picker, valuesArr){
+          console.log(valuesArr)
+          if (!valuesArr[0]) {
+            valuesArr[0] = '00';
           }
-          if (!values[1]) {
-            values[1] = '00';
+          if (!valuesArr[1]) {
+            valuesArr[1] = '00';
           }
-          if (!values[2]) {
-            values[2] = '00';
+          if (!valuesArr[2]) {
+            valuesArr[2] = '00';
           }
-          if (!values[3]) {
-            values[3] = '00';
+          if (!valuesArr[3]) {
+            valuesArr[3] = '00';
           }
-          this.timeSlotsValueTmp = values[0] +':'+ values[1] +'-'+ values[2] +':'+ values[3];
+          this.timeSlotsValueTmp = valuesArr[0] +':'+ valuesArr[1] +'-'+ valuesArr[2] +':'+ valuesArr[3];
         },
-        selectDate() {
+        selectDate(date) {
           var that= this;
-          that.getManageInfo();
-          that.getTime();
+          if (this.tabselected == 2) {
+            that.getManageInfo(date);
+            that.getTime();
+          }
+          // else if (this.tabselected == 3){
+          //   that.getOrderInfoAll();
+          // }
         },
         getDayAll(){
           var that = this;
@@ -455,9 +466,7 @@
           }).then(function(response){
             var responseData = response.data;
             if (responseData.rescode == 0) {
-              if (responseData.resMessage.length>0) {
-                that.statusDatas = responseData.resMessage;
-              }
+              that.statusDatas = responseData.resMessage;
             }else {
               Toast('获取每日设置状态信息失败');
             }
@@ -466,8 +475,12 @@
           });
         },
         //包含发布与不发布的
-        getManageInfo() {
+        getManageInfo(date) {
           var that= this;
+          that.timeFiledValue = [];
+          if (date) {
+            that.selected = date;
+          }
           //保存的信息
           axios({
               method:"POST",
@@ -481,15 +494,22 @@
             if (responseData.rescode == 0) {
               if (responseData.resMessage.length>0) {
                 if (responseData.resMessage[0].status == 0) {
-                  that.hasOrderedConfig = true;
-                  responseData.resMessage[0].timeslots.forEach(function(item){
-                    that.timeFiledValue.push(item.timeslot);
-                    document.querySelectorAll('.om-checklist-input[from="'+item.timeslot+'"]').value = item.number;
+                  that.hasOrderedConfig = false;
+                  JSON.parse(responseData.resMessage[0].timeSlot).forEach(function(item){
+                    that.timeFiledValue.push(item.time);
+                    console.log(document.querySelectorAll('.om-checklist-input[from="'+item.time+'"]')[0])
+                    setTimeout(function(){
+                      document.querySelectorAll('.om-checklist-input[from="'+item.time+'"]')[0].value = item.number;
+                    },200);
+                    that.saveTag = false;
                   });  
                 }else if(responseData.resMessage[0].status == 1){
                   that.hasOrderedConfig = true;
-                  that.orderedConfigDatas = responseData.resMessage[0].timeslots;
+                  that.orderedConfigDatas = JSON.parse(responseData.resMessage[0].timeSlot);
                 }
+              }else if (responseData.resMessage.length == 0) {
+                that.hasOrderedConfig = false;
+                that.saveTag = true;
               }
             }else {
               Toast('获取当日预约设置信息失败');
@@ -498,9 +518,9 @@
             Toast(err);
           });  
         },
-        findSelectDate(){
+        findSelectDate(date){
           var that = this;
-          that.getOrderInfoAll();
+          that.getOrderInfoAll(date);
         },
         submitSysConfig() {
           var that= this;
@@ -553,12 +573,12 @@
             Toast(err);
           });  
         },
-        clickStationRadio(){
-          //请求总状态
-          this.getDayAll();
-          this.getManageInfo();
-          this.getTime();
-        },
+        // clickStationRadio(){
+        //   //请求总状态
+        //   this.getDayAll();
+        //   this.getManageInfo();
+        //   this.getTime();
+        // },
         getTime(){
           var that= this;
           that.options = [];
@@ -596,6 +616,7 @@
               }
             }
           });
+          var timeAndNumber = _.sortBy(timeAndNumber, 'time');
           console.log(timeAndNumber)
           var paramsObj = {
               method:"POST",
@@ -616,6 +637,10 @@
               if (str == 'release') {
                 that.getDayAll();
                 that.getManageInfo();
+              }
+              if (str == 'add') {
+                that.saveTag = false;
+                that.getDayAll();
               }
             }else {
               Toast('获取预约信息失败');
@@ -691,9 +716,49 @@
               break;
           }
         },
-        getOrderInfoAll() {
+        getOrderInfoAll(date) {
           var that= this;
           that.orderedInfo = [];
+          if (date) {
+            that.selectedQuery = date
+          }
+          var now = new Date(that.selectedQuery); //当前日期 
+          var nowDayOfWeek = now.getDay(); //今天本周的第几天 
+          var nowDay = now.getDate(); //当前日 
+          var nowMonth = now.getMonth(); //当前月 
+          var nowYear = now.getYear(); //当前年 
+          nowYear += (nowYear < 2000) ? 1900 : 0; //
+          //获得本周的开始日期 
+          function getWeekStartDate() { 
+          var weekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek); 
+          return that.formatDate(weekStartDate); 
+          } 
+
+          //获得本周的结束日期 
+          function getWeekEndDate() { 
+          var weekEndDate = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek)); 
+          return that.formatDate(weekEndDate); 
+          } 
+
+          //获得本月的开始日期 
+          function getMonthStartDate(){ 
+          var monthStartDate = new Date(nowYear, nowMonth, 1); 
+          return that.formatDate(monthStartDate); 
+          } 
+
+          //获得本月的结束日期 
+          function getMonthEndDate(){ 
+          var monthEndDate = new Date(nowYear, nowMonth, getMonthDays(nowMonth)); 
+          return that.formatDate(monthEndDate); 
+          }
+
+          //获得某月的天数 
+          function getMonthDays(myMonth){ 
+            var monthStartDate = new Date(nowYear, myMonth, 1); 
+            var monthEndDate = new Date(nowYear, myMonth + 1, 1); 
+            var days = (monthEndDate - monthStartDate)/(1000 * 60 * 60 * 24); 
+            return days; 
+          }
           var paramsObj = {
               method:"POST",
               url:api.getOrderInfoAll,
@@ -702,13 +767,13 @@
           switch(that.view){
             case 'month':
               paramsObj.params.day_time = that.formatDate(that.selected);
-              paramsObj.params.day_time = '2017-08-14,2017-08-16';
+              //paramsObj.params.day_time = '2017-08-14,2017-08-16';
               break;
             case 'week':
-              //paramsObj.params.day_time = that.formatDate(date);
+              paramsObj.params.day_time = getWeekStartDate()+','+getWeekEndDate();
               break;
             case 'month2':
-              //paramsObj.params.day_time = that.formatDate(date);
+              paramsObj.params.day_time = getMonthStartDate()+','+getMonthEndDate();
               break;
           }
           //保存的信息
@@ -716,12 +781,16 @@
             var responseData = response.data;
             if (responseData.rescode == 0) {
               if (responseData.resMessage) {
-                // responseData.resMessage.forEach(function(item){
-                //   var tmpObj = {};
-                //   tmpObj.label = item;
-                //   tmpObj.value = item;
-                //   that.orderedInfo.push(tmpObj);
-                // });
+                responseData.resMessage.forEach(function(item){
+                  item.dayTime = that.formatDate(new Date(item.dayTime));
+                  if (item.station == '0') {
+                    item.station = '金智园区';
+                  }
+                  if (item.station == '1') {
+                    item.station = '牛首园区';
+                  }
+                  that.orderedInfo.push(item);
+                });
               }
             }else {
               Toast('获取员工已经预约信息失败');
