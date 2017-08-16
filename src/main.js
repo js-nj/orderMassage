@@ -32,7 +32,7 @@ if (process.env.NODE_ENV !== 'production') {
   console.log('api.getSignature:' + api.getSignature);
   axios.post(api.getSignature, {
     sign_url: window.location.href.replace(/#(\S+)?/, ''),
-    flag: 0
+    flag: '0'
   }).then(function({
     data
   }) {

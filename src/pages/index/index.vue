@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <div>
-      <h3 class="title">预约按摩</h3>
+      <h3 class="title">预约推拿</h3>
       <mt-navbar v-model="tabselected">
         <mt-tab-item id="1">系统设置</mt-tab-item>
         <mt-tab-item id="2">设置预约</mt-tab-item>
@@ -10,14 +10,14 @@
 
       <!-- tab-container -->
       <mt-tab-container v-model="tabselected">
-        <mt-tab-container-item id="1">
-            <mt-field label="日限制次数" placeholder="请输入次数" v-model="dayMaxTime"></mt-field>
-            <mt-field label="周限制次数" placeholder="请输入次数" v-model="weekMaxTime"></mt-field>
-            <mt-field label="月限制次数" placeholder="请输入次数" v-model="monthMaxTime"></mt-field>
-            <mt-field label="每次时长" placeholder="请输入时长" v-model="keepTime"></mt-field>
+        <mt-tab-container-item id="1" class="tab1">
+            <mt-field label="个人日限制次数" placeholder="请输入次数" v-model="dayMaxTime"></mt-field>
+            <mt-field label="个人周限制次数" placeholder="请输入次数" v-model="weekMaxTime"></mt-field>
+            <mt-field label="个人月限制次数" placeholder="请输入次数" v-model="monthMaxTime"></mt-field>
+            <mt-field label="个人单次时长(分钟)" placeholder="请输入时长(分钟)" v-model="keepTime"></mt-field>
             <!-- <mt-field label="时间段" placeholder="请输入时间段" v-model="systimeFiled"></mt-field> -->
             <div>
-              <mt-field label="时间段" placeholder="请添加时间" type="text" v-model="timeSlotsValue"></mt-field>
+              <mt-field label="推拿时间段" placeholder="请添加时间" type="text" v-model="timeSlotsValue"></mt-field>
               <!-- <div v-on:click="addTimeSlot" style="padding-left: 9px;">
                 <mt-button type="primary" size="small">添加时间段</mt-button>
               </div> -->
@@ -33,17 +33,17 @@
                 <mt-picker :slots="timeSlotsArray" @change="onTimetimeSlotsValueChange"></mt-picker>
               </mt-popup>
             </div>
-            <mt-field label="提示语" placeholder="请输入提示语" type="text" v-model="tipPoint"></mt-field>
+            <mt-field label="每日提醒语" placeholder="请输入提醒语" type="textarea" v-model="tipPoint"></mt-field>
             <div class="" style="color:#999;padding:12px 12px;font-size:14px;">
               <div>说明：</div>
               <p>1、时间段支持手动收入,栗子:12:00-14:00,18:00-20:00</p>
               <!-- <p>2、多个时间段之间用英文半角","隔开</p> -->
-              <p>2、每次时长要求可以被每个时间段的时长整除</p>
+              <p>2、个人单次时长要求可以被每个推拿时间段的时长整除</p>
             </div>
             <mt-button type="primary" size="large" v-on:click="submitSysConfig" class="om-button">提交</mt-button>
         </mt-tab-container-item>
         <mt-tab-container-item id="2">
-          <div style="height:580px;overflow:auto;">
+          <div style="">
             <mt-radio
               title="选择地点"
               v-model="stationValue"
@@ -72,7 +72,7 @@
                   </div>
               </div>
             </div>
-            <div v-else >
+            <div v-else :style="{height:tab2SetTimeHeight}" style="overflow:auto;">
               <om-checklist
                 title="设置时间段"
                 v-model="timeFiledValue"
@@ -87,7 +87,7 @@
           </div>
         </mt-tab-container-item>
         <mt-tab-container-item id="3">
-          <div style="overflow:auto;" :style="{height:tab3ContentHeight}">
+          <div>
             <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selectedQuery" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="findSelectDate">
               <div class="actions" slot="action">
                 <div class="action" @click="changeView">{{viewName}}</div>
@@ -95,7 +95,7 @@
               </div>
             </calendar>
             <div>
-              <div class="om-pv-8 om-ph-8">
+              <div class="om-pv-8 om-ph-8" style="overflow:auto;" :style="{height:tab3ContentHeight}">
                 <table style="width:100%;text-align:center;" >
                   <thead>
                     <tr>
@@ -114,7 +114,7 @@
                       <td v-text="item.station"></td>
                       <td v-text="item.timeSlot"></td>
                       <td v-text="item.employeeName"></td>
-                      <td v-text="item.employeeId"></td>
+                      <td v-text="String(item.employeeId)"></td>
                     </tr>
                   </tbody>
                 </table>
@@ -211,7 +211,8 @@
   }
   .om-2-radio .mint-cell {
     display: inline-block;
-    background-image:none;
+    border-bottom: solid 1px #d9d9d9 !important;
+    /*background-image: linear-gradient(0deg, #d9d9d9, #d9d9d9 50%, transparent 50%);*/
   }
   .om-2-radio .mint-cell .mint-cell-wrapper {
     background-image:none;
@@ -223,6 +224,17 @@
   .mint-msgbox-btns .bh-mint-btn-confirm {
     background-color: #26a2ff !important;
   }
+  .tab1 .mint-field .mint-cell-title {
+    width: 160px !important;
+  }
+  .tab1 .is-textarea .mint-cell-title .mint-cell-text {
+    position: relative;
+    top: -8px;
+  }
+  /*.mint-radiolist .mint-cell:first-child {
+    border-bottom: solid 1px #d9d9d9;
+     background-image: linear-gradient(0deg, #d9d9d9, #d9d9d9 50%, transparent 50%); 
+  }*/
 </style>
 
 <script>
@@ -284,16 +296,17 @@
           timeFiledValue:[],
           orderNumber:'',
           orderedConfigDatas:[
-            {
-              timeslot:'12:00-12:30',
-              number:'1'
-            },{
-              timeslot:'12:30-13:00',
-              number:'2'
-            }
+            // {
+            //   timeslot:'12:00-12:30',
+            //   number:'1'
+            // },{
+            //   timeslot:'12:30-13:00',
+            //   number:'2'
+            // }
           ],
           flagManage:'',
           statusDatas:[],
+          tab2SetTimeHeight:'',
           tab3ContentHeight:'',
           saveTag:true,
           //1 选择时间
@@ -307,11 +320,15 @@
               // values: ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24',],
               className: 'slot1',
               textAlign: 'right'
+            }, {
+              divider: true,
+              content: ':',
+              className: 'slot6'
             },{
               flex: 1,
               values: [],
               className: 'slot2',
-              textAlign: 'right'
+              textAlign: 'left'
             }, {
               divider: true,
               content: '-',
@@ -320,7 +337,11 @@
               flex: 1,
               values: [],
               className: 'slot4',
-              textAlign: 'left'
+              textAlign: 'right'
+            },{
+              divider: true,
+              content: ':',
+              className: 'slot7'
             }, {
               flex: 1,
               values: [],
@@ -351,12 +372,13 @@
           if (tabselected == 1) {
             this.getSysConfig();
           }else if (tabselected == 2) {
+            this.tab2SetTimeHeight = (document.body.clientHeight - 50 - 53 - 275 - 53 - 41) + 'px';
             //请求总状态
             this.getDayAll();
             this.getManageInfo();
             this.getTime();
           }else if (tabselected == 3) {
-            this.tab3ContentHeight = (document.body.clientHeight - 50 - 53 - 10 ) + 'px';
+            this.tab3ContentHeight = (document.body.clientHeight - 50 - 53 - 10 - 275) + 'px';
             this.getOrderInfoAll();
           }
           console.log('tabselected:------------------'+tabselected)
@@ -619,7 +641,8 @@
             }
           }).catch(function(err){
             Toast(err);
-          });  
+          });
+          that.options = ['12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30'];
         },
         saveHealthManage(str){
           var that= this;
@@ -868,9 +891,9 @@
         this.dealWithIndicator(this.startDate);
         this.getSysConfig();
         this.timeSlotsArray[0].values = this.setNumberArray(24);
-        this.timeSlotsArray[1].values = this.setNumberArray(60);
-        this.timeSlotsArray[3].values = this.setNumberArray(24);
-        this.timeSlotsArray[4].values = this.setNumberArray(60);
+        this.timeSlotsArray[2].values = this.setNumberArray(60);
+        this.timeSlotsArray[4].values = this.setNumberArray(24);
+        this.timeSlotsArray[6].values = this.setNumberArray(60);
       },
       components: {
         [Toast.name]: Toast,
