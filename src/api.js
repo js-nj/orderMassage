@@ -12,5 +12,6 @@ export default {
 	saveHealthManage: WEBPACK_CONIFG_HOST + '/health/saveHealthManage',
 	getManageInfo: WEBPACK_CONIFG_HOST + '/health/getManageInfo', //获取全部
 	getDayAll: WEBPACK_CONIFG_HOST + '/health/getDayAll',
-	getOrderInfoAll: WEBPACK_CONIFG_HOST + '/health/getOrderInfoAll'
+	getOrderInfoAll: WEBPACK_CONIFG_HOST + '/health/getOrderInfoAll',
+	getSignature: WEBPACK_CONIFG_HOST + '/api/getSignature'
 }

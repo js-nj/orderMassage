@@ -18,9 +18,10 @@
             <!-- <mt-field label="时间段" placeholder="请输入时间段" v-model="systimeFiled"></mt-field> -->
             <div>
               <mt-field label="时间段" placeholder="请添加时间" type="text" v-model="timeSlotsValue"></mt-field>
-              <div v-on:click="addTimeSlot" style="padding-left: 9px;">
+              <!-- <div v-on:click="addTimeSlot" style="padding-left: 9px;">
                 <mt-button type="primary" size="small">添加时间段</mt-button>
-              </div>
+              </div> -->
+              <mt-button v-on:click="addTimeSlot" type="primary" size="small" style="display:inline-block;margin-left: 9px;">添加时间段</mt-button>
               <mt-popup
                 v-model="timeSlotVisible"
                 position="bottom" style="width: 100%;">
@@ -32,7 +33,7 @@
                 <mt-picker :slots="timeSlotsArray" @change="onTimetimeSlotsValueChange"></mt-picker>
               </mt-popup>
             </div>
-            
+            <mt-field label="提示语" placeholder="请输入提示语" type="text" v-model="tipPoint"></mt-field>
             <div class="" style="color:#999;padding:12px 12px;font-size:14px;">
               <div>说明：</div>
               <p>1、时间段支持手动收入,栗子:12:00-14:00,18:00-20:00</p>
@@ -86,38 +87,41 @@
           </div>
         </mt-tab-container-item>
         <mt-tab-container-item id="3">
-          <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selectedQuery" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="findSelectDate">
-            <div class="actions" slot="action">
-              <div class="action" @click="changeView">{{viewName}}</div>
-              <!-- <div class="action" @click="addEvent">加</div> -->
-            </div>
-          </calendar>
-          <div>
-            <div class="om-pv-8 om-ph-8">
-              <table style="width:100%;text-align:center;" >
-                <thead>
-                  <tr>
-                    <!-- <td>预约编号</td> -->
-                    <td style="width:20%;">日期</td>
-                    <td style="width:20%;">地点</td>
-                    <td style="width:20%;">时间</td>
-                    <td>姓名</td>
-                    <td>员工号</td>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in orderedInfo" style="height:24px;font-size:14px;line-height:26px;" class="">
-                    <!-- <td v-text="item.id"></td> -->
-                    <td v-text="item.dayTime"></td>
-                    <td v-text="item.station"></td>
-                    <td v-text="item.timeSlot"></td>
-                    <td v-text="item.employeeName"></td>
-                    <td v-text="item.employeeId"></td>
-                  </tr>
-                </tbody>
-              </table>
+          <div style="overflow:auto;" :style="{height:tab3ContentHeight}">
+            <calendar :view="view" :decorate="decorate" :sub="sub" :selected="selectedQuery" :current-view="currentView" :start-date="startDate" :indicator="indicator" :start-monday="false" @prev="prev" @next="next" @today="today" @onPropsChange="change" :mainFrom="3" @selectDate="findSelectDate">
+              <div class="actions" slot="action">
+                <div class="action" @click="changeView">{{viewName}}</div>
+                <!-- <div class="action" @click="addEvent">加</div> -->
+              </div>
+            </calendar>
+            <div>
+              <div class="om-pv-8 om-ph-8">
+                <table style="width:100%;text-align:center;" >
+                  <thead>
+                    <tr>
+                      <!-- <td>预约编号</td> -->
+                      <td style="width:20%;">日期</td>
+                      <td style="width:20%;">地点</td>
+                      <td style="width:20%;">时间</td>
+                      <td>姓名</td>
+                      <td>员工号</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in orderedInfo" style="height:24px;font-size:14px;line-height:26px;" class="">
+                      <!-- <td v-text="item.id"></td> -->
+                      <td v-text="item.dayTime"></td>
+                      <td v-text="item.station"></td>
+                      <td v-text="item.timeSlot"></td>
+                      <td v-text="item.employeeName"></td>
+                      <td v-text="item.employeeId"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+          
         </mt-tab-container-item>
       </mt-tab-container>
       
@@ -207,16 +211,23 @@
   }
   .om-2-radio .mint-cell {
     display: inline-block;
+    background-image:none;
+  }
+  .om-2-radio .mint-cell .mint-cell-wrapper {
+    background-image:none;
   }
   .mint-radio-input:checked + .mint-radio-core {
     background-color: #26a2ff;
     border-color:#26a2ff;
   }
+  .mint-msgbox-btns .bh-mint-btn-confirm {
+    background-color: #26a2ff !important;
+  }
 </style>
 
 <script>
   //import CalendarDemo from './calendar-demo.vue'
-  import { Toast} from 'bh-mint-ui2';
+  import { Toast,MessageBox} from 'bh-mint-ui2';
   import moment from 'moment';
   import axios from 'axios';
   import api from '../../api.js';
@@ -245,6 +256,7 @@
           selected: new Date(),
           selectedQuery: new Date(),
           orderedInfo:[],
+          tipPoint:'',
           //username:'',
           stationValue:'0',
           //pickerValue:'',
@@ -282,6 +294,7 @@
           ],
           flagManage:'',
           statusDatas:[],
+          tab3ContentHeight:'',
           saveTag:true,
           //1 选择时间
           timeSlotVisible:false,
@@ -343,6 +356,7 @@
             this.getManageInfo();
             this.getTime();
           }else if (tabselected == 3) {
+            this.tab3ContentHeight = (document.body.clientHeight - 50 - 53 - 10 ) + 'px';
             this.getOrderInfoAll();
           }
           console.log('tabselected:------------------'+tabselected)
@@ -521,27 +535,31 @@
         },
         submitSysConfig() {
           var that= this;
-          //保存的信息
-          axios({
-              method:"POST",
-              url:api.saveHealthConfig,
-              params:{
-                day_limit:that.dayMaxTime,
-                week_limit:that.weekMaxTime,
-                month_limit:that.monthMaxTime,
-                duration:that.keepTime,
-                time_slot:that.timeSlotsValue,
-                flag:that.flag1
+          MessageBox.confirm('确定提交吗？').then(action => {
+            console.log(action);
+            //保存的信息
+            axios({
+                method:"POST",
+                url:api.saveHealthConfig,
+                params:{
+                  day_limit:that.dayMaxTime,
+                  week_limit:that.weekMaxTime,
+                  month_limit:that.monthMaxTime,
+                  duration:that.keepTime,
+                  time_slot:that.timeSlotsValue,
+                  point:that.tipPoint,
+                  flag:that.flag1
+                }
+            }).then(function(response){
+              if (response.data.rescode == 0) {
+                Toast('保存系统设置成功');
+              }else {
+                Toast('保存系统设置失败');
               }
-          }).then(function(response){
-            if (response.data.rescode == 0) {
-              Toast('保存系统设置成功');
-            }else {
-              Toast('保存系统设置失败');
-            }
-          }).catch(function(err){
-            Toast(err);
-          });  
+            }).catch(function(err){
+              Toast(err);
+            });  
+          });   
         },
         getSysConfig() {
           var that= this;
@@ -560,6 +578,7 @@
                 that.monthMaxTime = responseData.resMessage.monthLimit;
                 that.keepTime = responseData.resMessage.duration;
                 that.timeSlotsValue = responseData.resMessage.timeSlot;
+                that.tipPoint = responseData.resMessage.column1;
               }else {
                 that.flag1 = 0;
               }
@@ -784,7 +803,7 @@
           };
           switch(that.view){
             case 'month':
-              paramsObj.params.day_time = that.formatDate(that.selected);
+              paramsObj.params.day_time = that.formatDate(that.selectedQuery);
               //paramsObj.params.day_time = '2017-08-14,2017-08-16';
               break;
             case 'week':
@@ -845,6 +864,7 @@
         }
       },
       created() {
+        console.log('created--------------------------');
         this.dealWithIndicator(this.startDate);
         this.getSysConfig();
         this.timeSlotsArray[0].values = this.setNumberArray(24);
@@ -854,6 +874,7 @@
       },
       components: {
         [Toast.name]: Toast,
+        [MessageBox.name]: MessageBox,
         Calendar,
         omChecklist
       }
