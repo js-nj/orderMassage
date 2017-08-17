@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <div>
-      <h3 class="title">预约推拿</h3>
+      <!-- <h3 class="title">预约推拿</h3> -->
       <mt-navbar v-model="tabselected">
         <mt-tab-item id="1">系统设置</mt-tab-item>
         <mt-tab-item id="2">设置预约</mt-tab-item>
@@ -372,7 +372,7 @@
           if (tabselected == 1) {
             this.getSysConfig();
           }else if (tabselected == 2) {
-            this.tab2SetTimeHeight = (document.body.clientHeight - 50 - 53 - 275 - 53 - 41) + 'px';
+            this.tab2SetTimeHeight = (document.body.clientHeight - 50 - 275 - 53 - 41) + 'px';
             //请求总状态
             this.getDayAll();
             this.getManageInfo();
@@ -642,7 +642,7 @@
           }).catch(function(err){
             Toast(err);
           });
-          that.options = ['12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30'];
+          //that.options = ['12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30','12:00-12:30'];
         },
         saveHealthManage(str){
           var that= this;
