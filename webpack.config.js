@@ -98,7 +98,7 @@ if (process.env.NODE_ENV === 'production') {
         NODE_ENV: '"development"'
       },
       // "WEBPACK_CONIFG_HOST": '"http://amptest.wisedu.com/xsfwfw/"'
-      "WEBPACK_CONIFG_HOST": '"http://172.16.26.21:8080/zen"'
+      "WEBPACK_CONIFG_HOST": '"http://172.16.40.198:8080/zen"'
     })
   ])
 }

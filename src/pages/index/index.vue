@@ -96,7 +96,7 @@
             </calendar>
             <div>
               <div class="om-pv-8 om-ph-8" style="overflow:auto;" :style="{height:tab3ContentHeight}">
-                <table style="width:100%;text-align:center;" >
+                <table style="width:100%;text-align:center;" class="om-tab3-button-small">
                   <thead>
                     <tr>
                       <!-- <td>预约编号</td> -->
@@ -105,6 +105,7 @@
                       <td style="width:20%;">时间</td>
                       <td>姓名</td>
                       <td>员工号</td>
+                      <td>操作</td>
                     </tr>
                   </thead>
                   <tbody>
@@ -115,6 +116,9 @@
                       <td v-text="item.timeSlot"></td>
                       <td v-text="item.employeeName"></td>
                       <td v-text="String(item.employeeId)"></td>
+                      <td>
+                        <mt-button size="small" type="primary" @click="deleteOrder(item.id)">取消</mt-button>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -231,6 +235,11 @@
     position: relative;
     top: -8px;
   }
+  .om-tab3-button-small .mint-button--small {
+      height: 18px;
+    padding: 0px 2px;
+    font-size: 10px;
+  }
   /*.mint-radiolist .mint-cell:first-child {
     border-bottom: solid 1px #d9d9d9;
      background-image: linear-gradient(0deg, #d9d9d9, #d9d9d9 50%, transparent 50%); 
@@ -267,7 +276,9 @@
           startDate: new Date,
           selected: new Date(),
           selectedQuery: new Date(),
-          orderedInfo:[],
+          orderedInfo:[
+            
+          ],
           tipPoint:'',
           //username:'',
           stationValue:'0',
@@ -372,7 +383,7 @@
           if (tabselected == 1) {
             this.getSysConfig();
           }else if (tabselected == 2) {
-            this.tab2SetTimeHeight = (document.body.clientHeight - 50 - 275 - 53 - 41) + 'px';
+            this.tab2SetTimeHeight = (document.body.clientHeight - 50 - 275 - 53 - 41 - 10) + 'px';
             //请求总状态
             this.getDayAll();
             this.getManageInfo();
@@ -857,7 +868,37 @@
             }
           }).catch(function(err){
             Toast(err);
-          }); 
+          });
+          // if (location.href.indexOf('orderMassage') == -1) {
+          //   that.orderedInfo = [{
+          //     id:22,
+          //     dayTime:'55',
+          //     station:'55',
+          //     timeSlot:'55',
+          //     employeeName:'55',
+          //     employeeId:'55'
+          //   }];
+          // } 
+        },
+        deleteOrder(id){
+          var that= this;
+          axios({
+              method:"POST",
+              url:api.deleteOrder,
+              params:{
+                id:id
+              }
+          }).then(function(response){
+            var responseData = response.data;
+            if (responseData.rescode == 0) {
+              Toast('已经取消预约了~');
+              that.getOrderInfoAll();
+            }else {
+              Toast('取消失败,再试一下~');
+            }
+          }).catch(function(err){
+            Toast(err);
+          });
         },
         //格局化日期：yyyy-MM-dd 
         formatDate: function(date) { 

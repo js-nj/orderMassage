@@ -43,7 +43,7 @@
 
   & .calendar__header {
     position: relative;
-    padding: 25px 0;
+    padding: 16px 0;
   }
   & .calendar__action {
     display: flex;
